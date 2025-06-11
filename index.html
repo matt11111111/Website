@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shooting Game & Alphabet Website</title>
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background: #f0f4f8;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .alphabet {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 2rem;
+            color: #2d3a4b;
+            background: #fff;
+            padding: 32px 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(60, 60, 120, 0.08);
+            margin-top: 32px;
+        }
+        .letter {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: #e3eafc;
+            transition: background 0.2s;
+        }
+        .letter:hover {
+            background: #b6ccfe;
+        }
+        .game-container {
+            margin-top: 40px;
+            background: #222;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(60, 60, 120, 0.12);
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #111;
+            border-radius: 8px;
+        }
+        .game-title {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+        }
+        .game-instructions {
+            color: #eee;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-title">Simple Shooting Game</div>
+        <div class="game-instructions">Use arrow keys to move, space to shoot</div>
+        <canvas id="shooting-game" width="400" height="400"></canvas>
+    </div>
+    <div class="alphabet">
+        <div class="letter">A</div>
+        <div class="letter">B</div>
+        <div class="letter">C</div>
+        <div class="letter">D</div>
+        <div class="letter">E</div>
+        <div class="letter">F</div>
+        <div class="letter">G</div>
+        <div class="letter">H</div>
+        <div class="letter">I</div>
+        <div class="letter">J</div>
+        <div class="letter">K</div>
+        <div class="letter">L</div>
+        <div class="letter">M</div>
+        <div class="letter">N</div>
+        <div class="letter">O</div>
+        <div class="letter">P</div>
+        <div class="letter">Q</div>
+        <div class="letter">R</div>
+        <div class="letter">S</div>
+        <div class="letter">T</div>
+        <div class="letter">U</div>
+        <div class="letter">V</div>
+        <div class="letter">W</div>
+        <div class="letter">X</div>
+        <div class="letter">Y</div>
+        <div class="letter">Z</div>
+    </div>
+    <script>
+// Simple Shooting Game
+const canvas = document.getElementById('shooting-game');
+const ctx = canvas.getContext('2d');
+const player = { x: 200, y: 370, w: 30, h: 15, speed: 5 };
+let bullets = [];
+let enemies = [];
+let left = false, right = false, space = false;
+let score = 0;
+
+function drawPlayer() {
+    ctx.fillStyle = '#4fc3f7';
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+}
+
+function drawBullets() {
+    ctx.fillStyle = '#fff';
+    bullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 10));
+}
+
+function drawEnemies() {
+    ctx.fillStyle = '#e57373';
+    enemies.forEach(e => ctx.fillRect(e.x, e.y, 30, 15));
+}
+
+function movePlayer() {
+    if (left && player.x > 0) player.x -= player.speed;
+    if (right && player.x < canvas.width - player.w) player.x += player.speed;
+}
+
+function moveBullets() {
+    bullets.forEach(b => b.y -= 7);
+    bullets = bullets.filter(b => b.y > 0);
+}
+
+function moveEnemies() {
+    enemies.forEach(e => e.y += 2);
+    enemies = enemies.filter(e => e.y < canvas.height);
+}
+
+function spawnEnemy() {
+    if (Math.random() < 0.03) {
+        enemies.push({ x: Math.random() * (canvas.width - 30), y: -15 });
+    }
+}
+
+function shoot() {
+    bullets.push({ x: player.x + player.w / 2 - 2, y: player.y });
+}
+
+function checkCollisions() {
+    bullets.forEach((b, bi) => {
+        enemies.forEach((e, ei) => {
+            if (b.x < e.x + 30 && b.x + 4 > e.x && b.y < e.y + 15 && b.y + 10 > e.y) {
+                bullets.splice(bi, 1);
+                enemies.splice(ei, 1);
+                score++;
+            }
+        });
+    });
+}
+
+function drawScore() {
+    ctx.fillStyle = '#fff';
+    ctx.font = '16px Arial';
+    ctx.fillText('Score: ' + score, 10, 20);
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    movePlayer();
+    moveBullets();
+    moveEnemies();
+    spawnEnemy();
+    checkCollisions();
+    drawPlayer();
+    drawBullets();
+    drawEnemies();
+    drawScore();
+    requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') left = true;
+    if (e.key === 'ArrowRight') right = true;
+    if (e.key === ' ') space = true;
+});
+document.addEventListener('keyup', e => {
+    if (e.key === 'ArrowLeft') left = false;
+    if (e.key === 'ArrowRight') right = false;
+    if (e.key === ' ' && space) {
+        shoot();
+        space = false;
+    }
+});
+
+gameLoop();
+    </script>
+</body>
+</html>
