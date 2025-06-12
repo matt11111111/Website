@@ -3,297 +3,386 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SUPERHOT 3D</title>
+  <title>website</title>
   <style>
-    html, body { margin: 0; padding: 0; overflow: hidden; background: #181818; }
-    #three-canvas { width: 100vw; height: 100vh; display: block; position: fixed; top: 0; left: 0; z-index: 0; }
-    #ui {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none;
-      color: #fff; font-family: 'Segoe UI', Arial, sans-serif; z-index: 10;
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+      color: #222;
+      min-height: 100vh;
+      display: flex;
     }
-    #crosshair {
-      position: absolute; left: 50%; top: 50%; width: 24px; height: 24px; margin-left: -12px; margin-top: -12px;
-      border: 2px solid #fff; border-radius: 50%; opacity: 0.7;
+    .sidebar {
+      width: 80px;
+      background: #222b45;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 0;
+      box-shadow: 2px 0 16px rgba(34,43,69,0.08);
+      z-index: 2;
     }
-    #superhot {
-      position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
-      color: #f44; font-size: 3rem; font-weight: bold; letter-spacing: 8px; text-align: center; display: none;
-      text-shadow: 0 0 16px #f44, 0 0 32px #fff;
+    .sidebar .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-top: 40px;
+      width: 100%;
     }
-    #ammo, #score {
-      position: absolute; left: 24px; top: 24px; font-size: 1.2rem; color: #fff;
-      text-shadow: 0 0 8px #000;
+    .sidebar .nav button {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      padding: 12px 0;
+      cursor: pointer;
+      border-radius: 12px 0 0 12px;
+      transition: background 0.2s, color 0.2s;
+      width: 100%;
     }
-    #score { top: 56px; }
-    #instructions {
-      position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
-      color: #fff; font-size: 1.1rem; opacity: 0.8; text-align: center;
-      background: rgba(24,24,24,0.7); padding: 8px 24px; border-radius: 8px;
+    .sidebar .nav button.active, .sidebar .nav button:hover {
+      background: #fff;
+      color: #222b45;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      transition: background 0.3s;
+      position: relative;
+    }
+    .page {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      animation: fadein 0.5s;
+    }
+    .page.active {
+      display: flex;
+    }
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: none; }
+    }
+    .hello {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: #222b45;
+      letter-spacing: 2px;
+      background: rgba(255,255,255,0.7);
+      padding: 48px 64px;
+      border-radius: 24px;
+      box-shadow: 0 4px 32px rgba(34,43,69,0.07);
+    }
+    /* Flappy Bird styles */
+    .flappy-container {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 4px 32px rgba(34,43,69,0.07);
+      padding: 32px 40px 32px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .flappy-title {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #222b45;
+      margin-bottom: 16px;
+      letter-spacing: 2px;
+    }
+    #flappy {
+      background: #222b45;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(34,43,69,0.10);
+      margin-bottom: 16px;
+      display: block;
+    }
+    .score {
+      color: #222b45;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .flappy-controls {
+      color: #888;
+      font-size: 0.95rem;
+      margin-top: 8px;
+      text-align: center;
+    }
+    /* Food page styles */
+    .food-main {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+      max-width: 1100px;
+      min-height: 500px;
+      margin: 0 auto;
+    }
+    .food-timeline {
+      width: 160px;
+      background: #f8fafc;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px rgba(34,43,69,0.06);
+      padding: 32px 0 32px 0;
+      margin-right: 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 18px;
+      position: sticky;
+      top: 60px;
+      height: fit-content;
+    }
+    .timeline-event {
+      background: #fff;
+      color: #222b45;
+      font-size: 1.1rem;
+      font-weight: 500;
+      border-radius: 12px 0 0 12px;
+      padding: 10px 24px 10px 18px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(34,43,69,0.04);
+      transition: background 0.2s, color 0.2s;
+      border-right: 4px solid transparent;
+    }
+    .timeline-event.active, .timeline-event:hover {
+      background: #222b45;
+      color: #fff;
+      border-right: 4px solid #f66;
+    }
+    .food-content {
+      flex: 1;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 4px 32px rgba(34,43,69,0.07);
+      padding: 40px 48px;
+      color: #222b45;
+      font-size: 1.15rem;
+      line-height: 1.7;
+      min-width: 320px;
+      min-height: 350px;
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      animation: fadein 0.5s;
+    }
+    .food-content h2 {
+      margin-top: 0;
+      color: #222b45;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 1px;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/examples/js/controls/PointerLockControls.js"></script>
 </head>
 <body>
-  <canvas id="three-canvas"></canvas>
-  <div id="ui">
-    <div id="crosshair"></div>
-    <div id="superhot">SUPER<br>HOT</div>
-    <div id="ammo"></div>
-    <div id="score"></div>
-    <div id="instructions">Click to play. Move: WASD. Look: Mouse. Shoot: Left Click. Reload: R.<br>Time moves only when you move.</div>
+  <div class="sidebar">
+    <div style="font-size:2rem;font-weight:700;letter-spacing:2px;">M</div>
+    <div class="nav" style="flex:1 1 auto;flex-direction:column;gap:24px;">
+      <button id="nav-hello" class="active" title="Hello">👋</button>
+      <button id="nav-food" title="Food Essay">🍽️</button>
+    </div>
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">
+      <button id="nav-flappy" title="Flappy Bird">🐦</button>
+    </div>
+  </div>
+  <div class="main">
+    <div id="page-hello" class="page active">
+      <div class="hello">hello im matt.</div>
+    </div>
+    <div id="page-flappy" class="page">
+      <div class="flappy-container">
+        <div class="flappy-title">FLAPPY BIRD</div>
+        <canvas id="flappy" width="240" height="400"></canvas>
+        <div class="score" id="flappy-score">Score: 0</div>
+        <div class="flappy-controls">Click or Space to flap<br>Don't hit the pipes!</div>
+      </div>
+    </div>
+    <div id="page-food" class="page">
+      <div class="food-main">
+        <div class="food-timeline">
+          <div class="timeline-event active" data-event="origins">Origins</div>
+          <div class="timeline-event" data-event="tradition">Tradition</div>
+          <div class="timeline-event" data-event="globalization">Globalization</div>
+          <div class="timeline-event" data-event="politics">Politics</div>
+          <div class="timeline-event" data-event="essay">Essay</div>
+        </div>
+        <div class="food-content" id="food-content">
+          <!-- Content will be loaded here -->
+        </div>
+      </div>
+    </div>
   </div>
   <script>
-// --- SUPERHOT 3D CORE GAME ---
-const canvas = document.getElementById('three-canvas');
-const renderer = new THREE.WebGLRenderer({ canvas });
-renderer.setSize(window.innerWidth, window.innerHeight);
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x181818);
-
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-camera.position.set(0, 2, 8);
-
-const controls = new THREE.PointerLockControls(camera, canvas);
-scene.add(controls.getObject());
-
-// Lighting
-const light = new THREE.DirectionalLight(0xffffff, 1.2);
-light.position.set(5, 10, 7.5);
-scene.add(light);
-scene.add(new THREE.AmbientLight(0xffffff, 0.2));
-
-// Floor
-const floorGeo = new THREE.PlaneGeometry(40, 40);
-const floorMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
-const floor = new THREE.Mesh(floorGeo, floorMat);
-floor.rotation.x = -Math.PI/2;
-scene.add(floor);
-
-// UI
-const ammoUI = document.getElementById('ammo');
-const scoreUI = document.getElementById('score');
-const superhotUI = document.getElementById('superhot');
-const instructionsUI = document.getElementById('instructions');
-
-// Game state
-let bullets = [], enemyBullets = [], enemies = [], shards = [];
-let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
-let canShoot = true, canReload = true, isReloading = false;
-let ammo = 6, maxAmmo = 6, reloadTime = 1200;
-let score = 0, gameOver = false;
-let timeMoving = false;
-
-// Player movement
-let velocity = new THREE.Vector3();
-let direction = new THREE.Vector3();
-
-// --- ENEMY SPAWN ---
-function spawnEnemy() {
-  const geo = new THREE.SphereGeometry(0.5, 16, 16);
-  const mat = new THREE.MeshPhongMaterial({ color: 0xff4444 });
-  const mesh = new THREE.Mesh(geo, mat);
-  let angle = Math.random() * Math.PI * 2;
-  let dist = 8 + Math.random() * 8;
-  mesh.position.set(Math.cos(angle)*dist, 0.5, Math.sin(angle)*dist);
-  scene.add(mesh);
-  enemies.push({ mesh, cooldown: 60+Math.random()*60, alive: true });
+// Sidebar navigation
+const navHello = document.getElementById('nav-hello');
+const navFlappy = document.getElementById('nav-flappy');
+const navFood = document.getElementById('nav-food');
+const pageHello = document.getElementById('page-hello');
+const pageFlappy = document.getElementById('page-flappy');
+const pageFood = document.getElementById('page-food');
+navHello.onclick = () => {
+  navHello.classList.add('active');
+  navFlappy.classList.remove('active');
+  navFood.classList.remove('active');
+  pageHello.classList.add('active');
+  pageFlappy.classList.remove('active');
+  pageFood.classList.remove('active');
+};
+navFlappy.onclick = () => {
+  navFlappy.classList.add('active');
+  navHello.classList.remove('active');
+  navFood.classList.remove('active');
+  pageFlappy.classList.add('active');
+  pageHello.classList.remove('active');
+  pageFood.classList.remove('active');
+  startFlappy();
+};
+navFood.onclick = () => {
+  navFood.classList.add('active');
+  navHello.classList.remove('active');
+  navFlappy.classList.remove('active');
+  pageFood.classList.add('active');
+  pageHello.classList.remove('active');
+  pageFlappy.classList.remove('active');
+};
+// --- FLAPPY BIRD GAME LOGIC ---
+const flappyCanvas = document.getElementById('flappy');
+const flappyCtx = flappyCanvas.getContext('2d');
+const flappyScore = document.getElementById('flappy-score');
+let flappyState = {};
+function resetFlappy() {
+  flappyState = {
+    birdY: 200,
+    birdV: 0,
+    gravity: 0.5,
+    jump: -7,
+    pipes: [],
+    pipeGap: 90,
+    pipeW: 40,
+    pipeSpeed: 2,
+    frame: 0,
+    score: 0,
+    gameOver: false
+  };
+  flappyState.pipes.push({x: 260, h: 80+Math.random()*120});
+  flappyScore.textContent = 'Score: 0';
 }
-
-// --- BULLET ---
-function shoot() {
-  if (!canShoot || isReloading || ammo <= 0) return;
-  const geo = new THREE.SphereGeometry(0.09, 8, 8);
-  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.copy(camera.position);
-  const dir = new THREE.Vector3();
-  camera.getWorldDirection(dir);
-  bullets.push({ mesh, velocity: dir.clone().multiplyScalar(0.7) });
-  scene.add(mesh);
-  ammo--;
-  canShoot = false;
-  setTimeout(() => canShoot = true, 220);
-  updateUI();
+function flap() {
+  if (flappyState.gameOver) { resetFlappy(); return; }
+  flappyState.birdV = flappyState.jump;
 }
-function reload() {
-  if (isReloading || ammo === maxAmmo || !canReload) return;
-  isReloading = true;
-  canReload = false;
-  setTimeout(() => {
-    ammo = maxAmmo;
-    isReloading = false;
-    canReload = true;
-    updateUI();
-  }, reloadTime);
-  updateUI();
-}
-
-// --- ENEMY BULLET ---
-function enemyShoot(enemy) {
-  const geo = new THREE.SphereGeometry(0.09, 8, 8);
-  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.copy(enemy.mesh.position);
-  const dir = camera.position.clone().sub(enemy.mesh.position).normalize();
-  enemyBullets.push({ mesh, velocity: dir.multiplyScalar(0.45) });
-  scene.add(mesh);
-}
-
-// --- SHATTER EFFECT ---
-function shatter(pos) {
-  for (let i = 0; i < 18; ++i) {
-    const geo = new THREE.SphereGeometry(0.08, 6, 6);
-    const mat = new THREE.MeshPhongMaterial({ color: 0xff4444 });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.copy(pos);
-    let dir = new THREE.Vector3(Math.random()-0.5, Math.random(), Math.random()-0.5).normalize();
-    shards.push({ mesh, velocity: dir.multiplyScalar(0.2 + Math.random()*0.2), life: 40+Math.random()*20 });
-    scene.add(mesh);
+function drawFlappy() {
+  flappyCtx.clearRect(0,0,240,400);
+  // Background
+  flappyCtx.fillStyle = '#e0e7ef';
+  flappyCtx.fillRect(0,0,240,400);
+  // Pipes
+  flappyCtx.fillStyle = '#6cf';
+  for (let p of flappyState.pipes) {
+    flappyCtx.fillRect(p.x, 0, flappyState.pipeW, p.h);
+    flappyCtx.fillRect(p.x, p.h+flappyState.pipeGap, flappyState.pipeW, 400-p.h-flappyState.pipeGap);
+  }
+  // Bird
+  flappyCtx.save();
+  flappyCtx.translate(60, flappyState.birdY);
+  flappyCtx.rotate(Math.min(Math.PI/4, flappyState.birdV/10));
+  flappyCtx.fillStyle = '#f66';
+  flappyCtx.beginPath();
+  flappyCtx.arc(0,0,14,0,2*Math.PI);
+  flappyCtx.fill();
+  flappyCtx.restore();
+  // Score
+  flappyCtx.fillStyle = '#222b45';
+  flappyCtx.font = 'bold 24px Segoe UI, Arial';
+  flappyCtx.fillText(flappyState.score, 200, 40);
+  if (flappyState.gameOver) {
+    flappyCtx.fillStyle = '#f66';
+    flappyCtx.font = 'bold 32px Segoe UI, Arial';
+    flappyCtx.fillText('Game Over', 40, 200);
+    flappyCtx.font = '16px Segoe UI, Arial';
+    flappyCtx.fillStyle = '#222b45';
+    flappyCtx.fillText('Click or Space to restart', 30, 230);
   }
 }
-
-// --- UPDATE/RENDER ---
-function updateUI() {
-  ammoUI.textContent = isReloading ? 'RELOADING...' : `AMMO: ${ammo}`;
-  scoreUI.textContent = `SCORE: ${score}`;
-}
-
-function updateBullets() {
-  bullets.forEach(b => b.mesh.position.add(b.velocity));
-  bullets = bullets.filter(b => {
-    if (b.mesh.position.distanceTo(camera.position) > 40) { scene.remove(b.mesh); return false; }
-    return true;
-  });
-  enemyBullets.forEach(b => b.mesh.position.add(b.velocity));
-  enemyBullets = enemyBullets.filter(b => {
-    if (b.mesh.position.distanceTo(camera.position) > 40) { scene.remove(b.mesh); return false; }
-    return true;
-  });
-}
-function updateShards() {
-  shards.forEach(s => {
-    s.mesh.position.add(s.velocity);
-    s.velocity.y -= 0.01;
-    s.life--;
-  });
-  shards = shards.filter(s => {
-    if (s.life < 0) { scene.remove(s.mesh); return false; }
-    return true;
-  });
-}
-function updateEnemies() {
-  enemies.forEach(e => {
-    if (!e.alive) return;
-    let dir = camera.position.clone().sub(e.mesh.position); dir.y = 0;
-    if (dir.length() > 1) { dir.normalize(); e.mesh.position.add(dir.multiplyScalar(0.035)); }
-    e.cooldown--;
-    if (e.cooldown <= 0) { enemyShoot(e); e.cooldown = 60+Math.random()*60; }
-  });
-  if (Math.random() < 0.01 + score/1000) spawnEnemy();
-}
-function checkCollisions() {
-  // Player hit by enemy bullet
-  for (let b of enemyBullets) {
-    if (b.mesh.position.distanceTo(camera.position) < 0.4) {
-      gameOver = true;
-      superhotUI.style.display = 'block';
-    }
+function updateFlappy() {
+  if (flappyState.gameOver) return;
+  flappyState.birdV += flappyState.gravity;
+  flappyState.birdY += flappyState.birdV;
+  flappyState.frame++;
+  // Pipes
+  if (flappyState.frame % 80 === 0) {
+    flappyState.pipes.push({x: 260, h: 60+Math.random()*160});
   }
-  // Player hit by enemy
-  for (let e of enemies) {
-    if (e.alive && e.mesh.position.distanceTo(camera.position) < 0.7) {
-      gameOver = true;
-      superhotUI.style.display = 'block';
-    }
-  }
-  // Bullet hits enemy
-  bullets.forEach((b, bi) => {
-    enemies.forEach((e, ei) => {
-      if (e.alive && b.mesh.position.distanceTo(e.mesh.position) < 0.6) {
-        shatter(e.mesh.position);
-        scene.remove(e.mesh);
-        e.alive = false;
-        scene.remove(b.mesh);
-        bullets.splice(bi,1);
-        score++;
-        updateUI();
+  for (let p of flappyState.pipes) p.x -= flappyState.pipeSpeed;
+  if (flappyState.pipes[0].x < -flappyState.pipeW) flappyState.pipes.shift();
+  // Collision
+  for (let p of flappyState.pipes) {
+    if (60+14 > p.x && 60-14 < p.x+flappyState.pipeW) {
+      if (flappyState.birdY-14 < p.h || flappyState.birdY+14 > p.h+flappyState.pipeGap) {
+        flappyState.gameOver = true;
       }
-    });
-  });
-}
-
-function animate() {
-  renderer.render(scene, camera);
-  requestAnimationFrame(animate);
-}
-
-function superhotTick() {
-  if (gameOver) return;
-  // Time only moves if player moves or shoots
-  if (velocity.length() > 0.01 || !canShoot) {
-    controls.moveRight((moveRight-moveLeft)*0.13);
-    controls.moveForward((moveForward-moveBackward)*0.13);
-    updateBullets();
-    updateEnemies();
-    updateShards();
-    checkCollisions();
+    }
+    if (!p.passed && p.x+flappyState.pipeW < 60-14) {
+      flappyState.score++;
+      flappyScore.textContent = 'Score: ' + flappyState.score;
+      p.passed = true;
+    }
   }
-  setTimeout(superhotTick, 30);
+  if (flappyState.birdY > 400-14 || flappyState.birdY < 0) flappyState.gameOver = true;
 }
-
-// --- INPUT ---
-window.addEventListener('keydown', function(e) {
-  if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = true;
-  if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = true;
-  if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = true;
-  if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = true;
-  if ((e.code === 'Space' || e.button === 0) && !gameOver) shoot();
-  if (e.code === 'KeyR') reload();
-});
-window.addEventListener('keyup', function(e) {
-  if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = false;
-  if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = false;
-  if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = false;
-  if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = false;
-});
-canvas.addEventListener('click', () => {
-  controls.lock();
-  instructionsUI.style.display = 'none';
-});
-document.addEventListener('mousedown', e => {
-  if (e.button === 0 && !gameOver) shoot();
-});
+let flappyAnimId = null;
+function flappyLoop() {
+  if (pageFlappy.classList.contains('active')) {
+    updateFlappy();
+    drawFlappy();
+  }
+  flappyAnimId = requestAnimationFrame(flappyLoop);
+}
+function startFlappy() {
+  resetFlappy();
+  if (!flappyAnimId) flappyLoop();
+}
 document.addEventListener('keydown', e => {
-  if (gameOver && e.code === 'KeyR') window.location.reload();
+  if (!pageFlappy.classList.contains('active')) return;
+  if (e.code === 'Space') flap();
 });
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+flappyCanvas.addEventListener('mousedown', () => {
+  if (!pageFlappy.classList.contains('active')) return;
+  flap();
 });
-
-// --- INIT ---
-function resetGame() {
-  // Remove all objects
-  [...bullets, ...enemyBullets, ...shards, ...enemies].forEach(o => o.mesh && scene.remove(o.mesh));
-  bullets = [];
-  enemyBullets = [];
-  enemies = [];
-  shards = [];
-  ammo = maxAmmo;
-  score = 0;
-  gameOver = false;
-  superhotUI.style.display = 'none';
-  camera.position.set(0, 2, 8);
-  controls.getObject().position.set(0, 2, 8);
-  spawnEnemy();
-  updateUI();
+// --- Food Timeline Content ---
+const foodContent = document.getElementById('food-content');
+const timelineEvents = document.querySelectorAll('.timeline-event');
+const foodPages = {
+  origins: `<h2>Origins</h2><p>Food has been central to human evolution, from the discovery of fire to the development of agriculture. Early societies were shaped by what they could hunt, gather, or grow, and the sharing of food was a foundation for community and survival.</p>`,
+  tradition: `<h2>Tradition</h2><p>Across cultures, food traditions are passed down through generations. Recipes, rituals, and celebrations around food preserve identity and connect people to their heritage. From family recipes to national dishes, tradition gives food meaning beyond nutrition.</p>`,
+  globalization: `<h2>Globalization</h2><p>Modern food is shaped by global trade, migration, and technology. Fusion cuisines, international brands, and food media have made the world’s flavors more accessible, but also raise questions about authenticity and sustainability.</p>`,
+  politics: `<h2>Politics</h2><p>Food is political: access, affordability, and safety are not equal for all. Issues like food deserts, agricultural policy, and labor rights show how food reflects broader social and economic inequalities.</p>`,
+  essay: `<h2>Analytic Essay</h2><div class="essay-body"><p>Food is far more than sustenance; it is a powerful force that shapes cultures, identities, and societies. Across the world, what we eat and how we eat it is deeply intertwined with tradition, memory, and meaning. From the communal feasts of ancient civilizations to the fast-paced convenience of modern dining, food reflects our values, our histories, and our aspirations.</p><p>At its core, food is a language. Recipes are passed down through generations, carrying with them the stories and wisdom of ancestors. A single dish can evoke nostalgia, pride, or even resistance. For immigrants, food becomes a bridge between worlds, a way to preserve heritage while adapting to new environments. The act of sharing a meal fosters connection, breaking down barriers and building community.</p><p>Yet, food is also a site of conflict and inequality. Access to healthy, affordable food is not universal, and the global food system is marked by disparities in production, distribution, and consumption. The choices we make at the table are shaped by economics, politics, and power. In this way, food is both intensely personal and profoundly political.</p><p>In the age of globalization, food continues to evolve. Fusion cuisines, food media, and culinary tourism have made the world’s flavors more accessible than ever. But this interconnectedness also raises questions about authenticity, appropriation, and sustainability. As we navigate these complexities, food remains a vital expression of who we are—individually and collectively.</p><p>Ultimately, to understand food is to understand ourselves. Every bite is a story, every meal a moment of meaning. In celebrating food, we celebrate the rich tapestry of human experience.</p></div>`
+};
+function showFoodPage(key) {
+  timelineEvents.forEach(ev => ev.classList.remove('active'));
+  document.querySelector('.timeline-event[data-event="'+key+'"]').classList.add('active');
+  foodContent.innerHTML = foodPages[key];
 }
-resetGame();
-animate();
-superhotTick();
-// ...end game code...
+timelineEvents.forEach(ev => {
+  ev.onclick = () => showFoodPage(ev.getAttribute('data-event'));
+});
+// Show first timeline page by default
+showFoodPage('origins');
   </script>
 </body>
 </html>
