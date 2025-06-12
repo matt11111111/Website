@@ -3,224 +3,297 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Super Hot (Mini Version)</title>
+  <title>SUPERHOT 3D</title>
   <style>
-    body {
-      background: #181818;
-      min-height: 100vh;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      font-family: 'Segoe UI', Arial, sans-serif;
+    html, body { margin: 0; padding: 0; overflow: hidden; background: #181818; }
+    #three-canvas { width: 100vw; height: 100vh; display: block; position: fixed; top: 0; left: 0; z-index: 0; }
+    #ui {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none;
+      color: #fff; font-family: 'Segoe UI', Arial, sans-serif; z-index: 10;
     }
-    h1 {
-      color: #fff;
-      margin-top: 32px;
-      margin-bottom: 8px;
-      letter-spacing: 2px;
+    #crosshair {
+      position: absolute; left: 50%; top: 50%; width: 24px; height: 24px; margin-left: -12px; margin-top: -12px;
+      border: 2px solid #fff; border-radius: 50%; opacity: 0.7;
     }
-    .instructions {
-      color: #f44;
-      margin-bottom: 24px;
-      font-size: 1.1rem;
-      text-align: center;
+    #superhot {
+      position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+      color: #f44; font-size: 3rem; font-weight: bold; letter-spacing: 8px; text-align: center; display: none;
+      text-shadow: 0 0 16px #f44, 0 0 32px #fff;
     }
-    #game {
-      background: #222;
-      border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(60, 60, 120, 0.10);
-      margin: 0 auto 24px auto;
-      display: block;
-      border: 2px solid #f44;
+    #ammo, #score {
+      position: absolute; left: 24px; top: 24px; font-size: 1.2rem; color: #fff;
+      text-shadow: 0 0 8px #000;
     }
-    .footer {
-      color: #888;
-      font-size: 0.9rem;
-      margin-top: 32px;
-    }
-    .superhot {
-      color: #f44;
-      font-size: 2rem;
-      font-weight: bold;
-      letter-spacing: 4px;
-      margin-bottom: 12px;
-      text-align: center;
+    #score { top: 56px; }
+    #instructions {
+      position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 1.1rem; opacity: 0.8; text-align: center;
+      background: rgba(24,24,24,0.7); padding: 8px 24px; border-radius: 8px;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/examples/js/controls/PointerLockControls.js"></script>
 </head>
 <body>
-  <h1>SUPER<br>HOT</h1>
-  <div class="instructions">Move with WASD or arrow keys. Shoot with Space. <br>Time moves only when you move!</div>
-  <div class="superhot" id="superhot"></div>
-  <canvas id="game" width="480" height="320"></canvas>
-  <div class="footer">A mini version of SUPERHOT. Survive as long as you can!</div>
+  <canvas id="three-canvas"></canvas>
+  <div id="ui">
+    <div id="crosshair"></div>
+    <div id="superhot">SUPER<br>HOT</div>
+    <div id="ammo"></div>
+    <div id="score"></div>
+    <div id="instructions">Click to play. Move: WASD. Look: Mouse. Shoot: Left Click. Reload: R.<br>Time moves only when you move.</div>
+  </div>
   <script>
-// --- Mini SUPERHOT ---
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-const W = canvas.width, H = canvas.height;
+// --- SUPERHOT 3D CORE GAME ---
+const canvas = document.getElementById('three-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas });
+renderer.setSize(window.innerWidth, window.innerHeight);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x181818);
 
-const player = { x: W/2, y: H-40, r: 14, speed: 3, color: '#fff', vx: 0, vy: 0 };
-let bullets = [];
-let enemies = [];
-let enemyBullets = [];
-let keys = {};
-let lastMove = 0;
-let gameOver = false;
-let score = 0;
-let superhotText = document.getElementById('superhot');
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(0, 2, 8);
 
-function resetGame() {
-  player.x = W/2; player.y = H-40; player.vx = 0; player.vy = 0;
-  bullets = [];
-  enemies = [];
-  enemyBullets = [];
-  score = 0;
-  gameOver = false;
-  superhotText.textContent = '';
-  spawnEnemy();
+const controls = new THREE.PointerLockControls(camera, canvas);
+scene.add(controls.getObject());
+
+// Lighting
+const light = new THREE.DirectionalLight(0xffffff, 1.2);
+light.position.set(5, 10, 7.5);
+scene.add(light);
+scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+
+// Floor
+const floorGeo = new THREE.PlaneGeometry(40, 40);
+const floorMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
+const floor = new THREE.Mesh(floorGeo, floorMat);
+floor.rotation.x = -Math.PI/2;
+scene.add(floor);
+
+// UI
+const ammoUI = document.getElementById('ammo');
+const scoreUI = document.getElementById('score');
+const superhotUI = document.getElementById('superhot');
+const instructionsUI = document.getElementById('instructions');
+
+// Game state
+let bullets = [], enemyBullets = [], enemies = [], shards = [];
+let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+let canShoot = true, canReload = true, isReloading = false;
+let ammo = 6, maxAmmo = 6, reloadTime = 1200;
+let score = 0, gameOver = false;
+let timeMoving = false;
+
+// Player movement
+let velocity = new THREE.Vector3();
+let direction = new THREE.Vector3();
+
+// --- ENEMY SPAWN ---
+function spawnEnemy() {
+  const geo = new THREE.SphereGeometry(0.5, 16, 16);
+  const mat = new THREE.MeshPhongMaterial({ color: 0xff4444 });
+  const mesh = new THREE.Mesh(geo, mat);
+  let angle = Math.random() * Math.PI * 2;
+  let dist = 8 + Math.random() * 8;
+  mesh.position.set(Math.cos(angle)*dist, 0.5, Math.sin(angle)*dist);
+  scene.add(mesh);
+  enemies.push({ mesh, cooldown: 60+Math.random()*60, alive: true });
 }
 
-function drawPlayer() {
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.r, 0, 2*Math.PI);
-  ctx.fillStyle = player.color;
-  ctx.fill();
-}
-
-function drawBullets() {
-  ctx.fillStyle = '#fff';
-  bullets.forEach(b => ctx.fillRect(b.x-2, b.y-6, 4, 12));
-  ctx.fillStyle = '#f44';
-  enemyBullets.forEach(b => ctx.fillRect(b.x-2, b.y-6, 4, 12));
-}
-
-function drawEnemies() {
-  enemies.forEach(e => {
-    ctx.beginPath();
-    ctx.arc(e.x, e.y, e.r, 0, 2*Math.PI);
-    ctx.fillStyle = '#f44';
-    ctx.fill();
-  });
-}
-
-function movePlayer() {
-  let moved = false;
-  let vx = 0, vy = 0;
-  if (keys['ArrowLeft'] || keys['a']) { vx = -player.speed; moved = true; }
-  if (keys['ArrowRight'] || keys['d']) { vx = player.speed; moved = true; }
-  if (keys['ArrowUp'] || keys['w']) { vy = -player.speed; moved = true; }
-  if (keys['ArrowDown'] || keys['s']) { vy = player.speed; moved = true; }
-  player.vx = vx; player.vy = vy;
-  if (moved) lastMove = Date.now();
-}
-
-function updatePlayer() {
-  player.x += player.vx;
-  player.y += player.vy;
-  player.x = Math.max(player.r, Math.min(W-player.r, player.x));
-  player.y = Math.max(player.r, Math.min(H-player.r, player.y));
-}
-
+// --- BULLET ---
 function shoot() {
-  bullets.push({ x: player.x, y: player.y-player.r, vy: -6 });
+  if (!canShoot || isReloading || ammo <= 0) return;
+  const geo = new THREE.SphereGeometry(0.09, 8, 8);
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.copy(camera.position);
+  const dir = new THREE.Vector3();
+  camera.getWorldDirection(dir);
+  bullets.push({ mesh, velocity: dir.clone().multiplyScalar(0.7) });
+  scene.add(mesh);
+  ammo--;
+  canShoot = false;
+  setTimeout(() => canShoot = true, 220);
+  updateUI();
+}
+function reload() {
+  if (isReloading || ammo === maxAmmo || !canReload) return;
+  isReloading = true;
+  canReload = false;
+  setTimeout(() => {
+    ammo = maxAmmo;
+    isReloading = false;
+    canReload = true;
+    updateUI();
+  }, reloadTime);
+  updateUI();
+}
+
+// --- ENEMY BULLET ---
+function enemyShoot(enemy) {
+  const geo = new THREE.SphereGeometry(0.09, 8, 8);
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.copy(enemy.mesh.position);
+  const dir = camera.position.clone().sub(enemy.mesh.position).normalize();
+  enemyBullets.push({ mesh, velocity: dir.multiplyScalar(0.45) });
+  scene.add(mesh);
+}
+
+// --- SHATTER EFFECT ---
+function shatter(pos) {
+  for (let i = 0; i < 18; ++i) {
+    const geo = new THREE.SphereGeometry(0.08, 6, 6);
+    const mat = new THREE.MeshPhongMaterial({ color: 0xff4444 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.copy(pos);
+    let dir = new THREE.Vector3(Math.random()-0.5, Math.random(), Math.random()-0.5).normalize();
+    shards.push({ mesh, velocity: dir.multiplyScalar(0.2 + Math.random()*0.2), life: 40+Math.random()*20 });
+    scene.add(mesh);
+  }
+}
+
+// --- UPDATE/RENDER ---
+function updateUI() {
+  ammoUI.textContent = isReloading ? 'RELOADING...' : `AMMO: ${ammo}`;
+  scoreUI.textContent = `SCORE: ${score}`;
 }
 
 function updateBullets() {
-  bullets.forEach(b => b.y += b.vy);
-  bullets = bullets.filter(b => b.y > -10);
-  enemyBullets.forEach(b => b.y += b.vy);
-  enemyBullets = enemyBullets.filter(b => b.y < H+10);
+  bullets.forEach(b => b.mesh.position.add(b.velocity));
+  bullets = bullets.filter(b => {
+    if (b.mesh.position.distanceTo(camera.position) > 40) { scene.remove(b.mesh); return false; }
+    return true;
+  });
+  enemyBullets.forEach(b => b.mesh.position.add(b.velocity));
+  enemyBullets = enemyBullets.filter(b => {
+    if (b.mesh.position.distanceTo(camera.position) > 40) { scene.remove(b.mesh); return false; }
+    return true;
+  });
 }
-
-function spawnEnemy() {
-  let x = Math.random()*(W-40)+20;
-  enemies.push({ x, y: 30, r: 14, cooldown: 60+Math.random()*60 });
+function updateShards() {
+  shards.forEach(s => {
+    s.mesh.position.add(s.velocity);
+    s.velocity.y -= 0.01;
+    s.life--;
+  });
+  shards = shards.filter(s => {
+    if (s.life < 0) { scene.remove(s.mesh); return false; }
+    return true;
+  });
 }
-
 function updateEnemies() {
   enemies.forEach(e => {
-    if (Math.abs(e.x-player.x) > 2) e.x += (player.x > e.x ? 1 : -1)*1.2;
+    if (!e.alive) return;
+    let dir = camera.position.clone().sub(e.mesh.position); dir.y = 0;
+    if (dir.length() > 1) { dir.normalize(); e.mesh.position.add(dir.multiplyScalar(0.035)); }
     e.cooldown--;
-    if (e.cooldown <= 0) {
-      enemyBullets.push({ x: e.x, y: e.y+e.r, vy: 4 });
-      e.cooldown = 60+Math.random()*60;
-    }
+    if (e.cooldown <= 0) { enemyShoot(e); e.cooldown = 60+Math.random()*60; }
   });
   if (Math.random() < 0.01 + score/1000) spawnEnemy();
 }
-
 function checkCollisions() {
   // Player hit by enemy bullet
   for (let b of enemyBullets) {
-    if (Math.hypot(b.x-player.x, b.y-player.y) < player.r+6) {
+    if (b.mesh.position.distanceTo(camera.position) < 0.4) {
       gameOver = true;
-      superhotText.textContent = 'SUPER\nHOT';
+      superhotUI.style.display = 'block';
     }
   }
   // Player hit by enemy
   for (let e of enemies) {
-    if (Math.hypot(e.x-player.x, e.y-player.y) < player.r+e.r) {
+    if (e.alive && e.mesh.position.distanceTo(camera.position) < 0.7) {
       gameOver = true;
-      superhotText.textContent = 'SUPER\nHOT';
+      superhotUI.style.display = 'block';
     }
   }
   // Bullet hits enemy
   bullets.forEach((b, bi) => {
     enemies.forEach((e, ei) => {
-      if (Math.hypot(b.x-e.x, b.y-e.y) < e.r+6) {
-        enemies.splice(ei,1);
+      if (e.alive && b.mesh.position.distanceTo(e.mesh.position) < 0.6) {
+        shatter(e.mesh.position);
+        scene.remove(e.mesh);
+        e.alive = false;
+        scene.remove(b.mesh);
         bullets.splice(bi,1);
         score++;
+        updateUI();
       }
     });
   });
 }
 
-function drawScore() {
-  ctx.fillStyle = '#fff';
-  ctx.font = '16px Arial';
-  ctx.fillText('Score: '+score, 10, 24);
-}
-
-function gameLoop() {
-  ctx.clearRect(0,0,W,H);
-  movePlayer(); // <-- Ensure player movement is processed every frame
-  drawPlayer();
-  drawBullets();
-  drawEnemies();
-  drawScore();
-  if (!gameOver) {
-    requestAnimationFrame(gameLoop);
-  }
+function animate() {
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
 }
 
 function superhotTick() {
   if (gameOver) return;
   // Time only moves if player moves or shoots
-  if (player.vx !== 0 || player.vy !== 0 || keys[' ']) {
-    updatePlayer();
+  if (velocity.length() > 0.01 || !canShoot) {
+    controls.moveRight((moveRight-moveLeft)*0.13);
+    controls.moveForward((moveForward-moveBackward)*0.13);
     updateBullets();
     updateEnemies();
+    updateShards();
     checkCollisions();
   }
   setTimeout(superhotTick, 30);
 }
 
-document.addEventListener('keydown', e => {
-  keys[e.key] = true;
-  if ((e.key === ' ' || e.key === 'Spacebar') && !gameOver) shoot();
-  if (gameOver && e.key === 'r') resetGame();
+// --- INPUT ---
+window.addEventListener('keydown', function(e) {
+  if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = true;
+  if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = true;
+  if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = true;
+  if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = true;
+  if ((e.code === 'Space' || e.button === 0) && !gameOver) shoot();
+  if (e.code === 'KeyR') reload();
 });
-document.addEventListener('keyup', e => {
-  keys[e.key] = false;
+window.addEventListener('keyup', function(e) {
+  if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = false;
+  if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = false;
+  if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = false;
+  if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = false;
+});
+canvas.addEventListener('click', () => {
+  controls.lock();
+  instructionsUI.style.display = 'none';
+});
+document.addEventListener('mousedown', e => {
+  if (e.button === 0 && !gameOver) shoot();
+});
+document.addEventListener('keydown', e => {
+  if (gameOver && e.code === 'KeyR') window.location.reload();
+});
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+// --- INIT ---
+function resetGame() {
+  // Remove all objects
+  [...bullets, ...enemyBullets, ...shards, ...enemies].forEach(o => o.mesh && scene.remove(o.mesh));
+  bullets = [];
+  enemyBullets = [];
+  enemies = [];
+  shards = [];
+  ammo = maxAmmo;
+  score = 0;
+  gameOver = false;
+  superhotUI.style.display = 'none';
+  camera.position.set(0, 2, 8);
+  controls.getObject().position.set(0, 2, 8);
+  spawnEnemy();
+  updateUI();
+}
 resetGame();
-gameLoop();
+animate();
 superhotTick();
+// ...end game code...
   </script>
 </body>
 </html>
