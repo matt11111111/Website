@@ -188,76 +188,117 @@
   </style>
 </head>
 <body>
-  <div class="sidebar">
+  <div class="sidebar" role="navigation" aria-label="Main Navigation">
     <div style="font-size:2rem;font-weight:700;letter-spacing:2px;">M</div>
     <div class="nav" style="flex:1 1 auto;flex-direction:column;gap:24px;">
-      <button id="nav-hello" class="active" title="Hello">👋</button>
-      <button id="nav-food" title="Food Essay">🍽️</button>
-    </div>
-    <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">
-      <button id="nav-flappy" title="Flappy Bird">🐦</button>
+      <button id="nav-hello" class="active" title="Home" aria-label="Home" tabindex="0" type="button">🏠</button>
+      <button id="nav-intro" title="Introduction" aria-label="Introduction" tabindex="0" type="button">👋</button>
+      <button id="nav-food" title="Food Essay" aria-label="Food Essay" tabindex="0" type="button">🍽️</button>
+      <button id="nav-flappy" title="Flappy Bird" aria-label="Flappy Bird" tabindex="0" type="button">🐦</button>
     </div>
   </div>
-  <div class="main">
-    <div id="page-hello" class="page active">
-      <div class="hello">hello im matt.</div>
-    </div>
-    <div id="page-flappy" class="page">
-      <div class="flappy-container">
-        <div class="flappy-title">FLAPPY BIRD</div>
-        <canvas id="flappy" width="240" height="400"></canvas>
-        <div class="score" id="flappy-score">Score: 0</div>
-        <div class="flappy-controls">Click or Space to flap<br>Don't hit the pipes!</div>
+  <div class="main" style="background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);">
+    <div id="page-hello" class="page active" role="main" aria-labelledby="main-title">
+      <div class="hello" style="display:flex;flex-direction:column;align-items:center;">
+        <h1 id="main-title" style="font-size:2.5rem;margin:0 0 18px 0;letter-spacing:2px;">My Website</h1>
+        <div style="font-size:1.25rem;max-width:500px;text-align:center;line-height:1.6;background:rgba(255,255,255,0.8);padding:18px 28px;border-radius:16px;box-shadow:0 2px 12px rgba(34,43,69,0.06);">
+          Welcome to my website! This is a creative digital playground where you can explore fun games, read about food, and discover interactive surprises. Whether you're here to challenge yourself with Flappy Bird, learn something new, or just have a good time, there's something for everyone. Dive in and enjoy the experience!
+        </div>
       </div>
     </div>
-    <div id="page-food" class="page">
-      <div class="food-main">
-        <div class="food-timeline">
-          <div class="timeline-event active" data-event="origins">Origins</div>
-          <div class="timeline-event" data-event="tradition">Tradition</div>
-          <div class="timeline-event" data-event="globalization">Globalization</div>
-          <div class="timeline-event" data-event="politics">Politics</div>
-          <div class="timeline-event" data-event="essay">Essay</div>
+    <div id="page-intro" class="page" role="main" aria-labelledby="intro-title">
+      <div class="hello" style="display:flex;flex-direction:column;align-items:center;">
+        <h2 id="intro-title" style="font-size:2rem;margin:0 0 18px 0;letter-spacing:1px;">Introduction</h2>
+        <div style="font-size:1.15rem;max-width:500px;text-align:center;line-height:1.6;background:rgba(255,255,255,0.8);padding:16px 24px;border-radius:14px;box-shadow:0 2px 12px rgba(34,43,69,0.06);">
+          My name is Matthew. I'm a rising sophomore at Strake.
         </div>
-        <div class="food-content" id="food-content">
+      </div>
+    </div>
+    <div id="page-food" class="page" aria-labelledby="food-title">
+      <div class="food-main">
+        <div class="food-timeline" role="tablist" aria-label="Food Timeline">
+          <div class="timeline-event active" data-event="origins" role="tab" tabindex="0">Origins</div>
+          <div class="timeline-event" data-event="tradition" role="tab" tabindex="0">Tradition</div>
+          <div class="timeline-event" data-event="globalization" role="tab" tabindex="0">Globalization</div>
+          <div class="timeline-event" data-event="politics" role="tab" tabindex="0">Politics</div>
+          <div class="timeline-event" data-event="essay" role="tab" tabindex="0">Essay</div>
+        </div>
+        <div class="food-content" id="food-content" aria-live="polite">
           <!-- Content will be loaded here -->
         </div>
+      </div>
+    </div>
+    <div id="page-flappy" class="page" aria-labelledby="flappy-title">
+      <div class="flappy-container">
+        <div class="flappy-title" id="flappy-title">FLAPPY BIRD</div>
+        <canvas id="flappy" width="240" height="400" aria-label="Flappy Bird Game" tabindex="0"></canvas>
+        <div class="score" id="flappy-score">Score: 0</div>
+        <div class="flappy-controls">Click or Space to flap<br>Don't hit the pipes!</div>
       </div>
     </div>
   </div>
   <script>
 // Sidebar navigation
 const navHello = document.getElementById('nav-hello');
-const navFlappy = document.getElementById('nav-flappy');
+const navIntro = document.getElementById('nav-intro');
 const navFood = document.getElementById('nav-food');
+const navFlappy = document.getElementById('nav-flappy');
 const pageHello = document.getElementById('page-hello');
-const pageFlappy = document.getElementById('page-flappy');
+const pageIntro = document.getElementById('page-intro');
 const pageFood = document.getElementById('page-food');
-navHello.onclick = () => {
-  navHello.classList.add('active');
-  navFlappy.classList.remove('active');
-  navFood.classList.remove('active');
-  pageHello.classList.add('active');
-  pageFlappy.classList.remove('active');
-  pageFood.classList.remove('active');
-};
-navFlappy.onclick = () => {
-  navFlappy.classList.add('active');
-  navHello.classList.remove('active');
-  navFood.classList.remove('active');
-  pageFlappy.classList.add('active');
-  pageHello.classList.remove('active');
-  pageFood.classList.remove('active');
-  startFlappy();
-};
-navFood.onclick = () => {
-  navFood.classList.add('active');
-  navHello.classList.remove('active');
-  navFlappy.classList.remove('active');
-  pageFood.classList.add('active');
-  pageHello.classList.remove('active');
-  pageFlappy.classList.remove('active');
-};
+const pageFlappy = document.getElementById('page-flappy');
+
+// Remove all existing event listeners by replacing the elements
+function replaceButton(id) {
+  const oldBtn = document.getElementById(id);
+  if (!oldBtn) return null;
+  const newBtn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+  return newBtn;
+}
+const navHelloBtn = replaceButton('nav-hello');
+const navIntroBtn = replaceButton('nav-intro');
+const navFoodBtn = replaceButton('nav-food');
+const navFlappyBtn = replaceButton('nav-flappy');
+
+function setActiveTab(tab) {
+  [navHelloBtn, navIntroBtn, navFoodBtn, navFlappyBtn].forEach(btn => btn && btn.classList.remove('active'));
+  [pageHello, pageIntro, pageFood, pageFlappy].forEach(page => page && page.classList.remove('active'));
+  // Stop Flappy animation if leaving the tab
+  if (tab !== 'flappy' && flappyAnimId) {
+    cancelAnimationFrame(flappyAnimId);
+    flappyAnimId = null;
+  }
+  if (tab === 'hello') {
+    navHelloBtn && navHelloBtn.classList.add('active');
+    pageHello && pageHello.classList.add('active');
+  } else if (tab === 'intro') {
+    navIntroBtn && navIntroBtn.classList.add('active');
+    pageIntro && pageIntro.classList.add('active');
+  } else if (tab === 'food') {
+    navFoodBtn && navFoodBtn.classList.add('active');
+    pageFood && pageFood.classList.add('active');
+  } else if (tab === 'flappy') {
+    navFlappyBtn && navFlappyBtn.classList.add('active');
+    pageFlappy && pageFlappy.classList.add('active');
+    if (typeof startFlappy === 'function') startFlappy();
+  }
+}
+
+if (navHelloBtn) navHelloBtn.onclick = function(e) { e.preventDefault(); setActiveTab('hello'); };
+if (navIntroBtn) navIntroBtn.onclick = function(e) { e.preventDefault(); setActiveTab('intro'); };
+if (navFoodBtn) navFoodBtn.onclick = function(e) { e.preventDefault(); setActiveTab('food'); };
+if (navFlappyBtn) navFlappyBtn.onclick = function(e) { e.preventDefault(); setActiveTab('flappy'); };
+
+// Debug: Log clicks on sidebar nav buttons
+[navHello, navIntro, navFood, navFlappy].forEach((btn, idx) => {
+  if (btn) {
+    btn.addEventListener('click', function() {
+      console.log('Sidebar button clicked:', btn.id);
+    });
+  }
+});
+
 // --- FLAPPY BIRD GAME LOGIC ---
 const flappyCanvas = document.getElementById('flappy');
 const flappyCtx = flappyCanvas.getContext('2d');
@@ -267,12 +308,12 @@ function resetFlappy() {
   flappyState = {
     birdY: 200,
     birdV: 0,
-    gravity: 0.5,
-    jump: -7,
+    gravity: 0.4, // less gravity for easier control
+    jump: -8,     // higher jump for easier play
     pipes: [],
-    pipeGap: 90,
-    pipeW: 40,
-    pipeSpeed: 2,
+    pipeGap: 110, // wider gap for easier play
+    pipeW: 40,    // pipe width
+    pipeSpeed: 1.7, // slower pipes for easier play
     frame: 0,
     score: 0,
     gameOver: false
@@ -284,25 +325,68 @@ function flap() {
   if (flappyState.gameOver) { resetFlappy(); return; }
   flappyState.birdV = flappyState.jump;
 }
+let flappyAnimId = null;
 function drawFlappy() {
   flappyCtx.clearRect(0,0,240,400);
   // Background
   flappyCtx.fillStyle = '#e0e7ef';
   flappyCtx.fillRect(0,0,240,400);
-  // Pipes
-  flappyCtx.fillStyle = '#6cf';
+  // Buildings (pipes as realistic buildings)
   for (let p of flappyState.pipes) {
+    // Building body
+    flappyCtx.fillStyle = '#b0bec5';
     flappyCtx.fillRect(p.x, 0, flappyState.pipeW, p.h);
     flappyCtx.fillRect(p.x, p.h+flappyState.pipeGap, flappyState.pipeW, 400-p.h-flappyState.pipeGap);
+    // Building roof
+    flappyCtx.fillStyle = '#78909c';
+    flappyCtx.fillRect(p.x-4, p.h-8, flappyState.pipeW+8, 12);
+    flappyCtx.fillRect(p.x-4, p.h+flappyState.pipeGap-4, flappyState.pipeW+8, 12);
+    // Windows (rows and columns)
+    flappyCtx.fillStyle = '#fff';
+    for (let y = 10; y < p.h-16; y += 18) {
+      for (let x = 4; x < flappyState.pipeW-8; x += 14) {
+        flappyCtx.fillRect(p.x + x, y, 10, 10);
+      }
+    }
+    for (let y = p.h+flappyState.pipeGap+10; y < 400-16; y += 18) {
+      for (let x = 4; x < flappyState.pipeW-8; x += 14) {
+        flappyCtx.fillRect(p.x + x, y, 10, 10);
+      }
+    }
   }
-  // Bird
+  // Airplane (bird)
   flappyCtx.save();
   flappyCtx.translate(60, flappyState.birdY);
   flappyCtx.rotate(Math.min(Math.PI/4, flappyState.birdV/10));
-  flappyCtx.fillStyle = '#f66';
+  // Draw airplane body (fuselage)
+  flappyCtx.fillStyle = '#fff';
   flappyCtx.beginPath();
-  flappyCtx.arc(0,0,14,0,2*Math.PI);
+  flappyCtx.ellipse(0, 0, 20, 7, 0, 0, 2 * Math.PI);
   flappyCtx.fill();
+  // Draw cockpit (light blue)
+  flappyCtx.fillStyle = '#b3e5fc';
+  flappyCtx.beginPath();
+  flappyCtx.ellipse(10, -2, 5, 4, 0, 0, 2 * Math.PI);
+  flappyCtx.fill();
+  // Draw nose (yellow)
+  flappyCtx.fillStyle = '#fbc02d';
+  flappyCtx.beginPath();
+  flappyCtx.arc(20, 0, 4, -Math.PI/2, Math.PI/2);
+  flappyCtx.fill();
+  // Draw wings (gray)
+  flappyCtx.fillStyle = '#cfd8dc';
+  flappyCtx.fillRect(-6, -14, 28, 5); // top wing
+  flappyCtx.fillRect(-6, 9, 28, 5); // bottom wing
+  // Draw tail (gray)
+  flappyCtx.fillStyle = '#b0bec5';
+  flappyCtx.fillRect(-16, -5, 5, 10);
+  // Draw windows (small blue dots)
+  flappyCtx.fillStyle = '#90caf9';
+  for (let i = -4; i <= 4; i += 4) {
+    flappyCtx.beginPath();
+    flappyCtx.arc(i, -2, 1.2, 0, 2 * Math.PI);
+    flappyCtx.fill();
+  }
   flappyCtx.restore();
   // Score
   flappyCtx.fillStyle = '#222b45';
@@ -343,17 +427,21 @@ function updateFlappy() {
   }
   if (flappyState.birdY > 400-14 || flappyState.birdY < 0) flappyState.gameOver = true;
 }
-let flappyAnimId = null;
+function startFlappy() {
+  resetFlappy();
+  // Always start a new animation loop
+  if (flappyAnimId) {
+    cancelAnimationFrame(flappyAnimId);
+    flappyAnimId = null;
+  }
+  flappyLoop();
+}
 function flappyLoop() {
   if (pageFlappy.classList.contains('active')) {
     updateFlappy();
     drawFlappy();
   }
   flappyAnimId = requestAnimationFrame(flappyLoop);
-}
-function startFlappy() {
-  resetFlappy();
-  if (!flappyAnimId) flappyLoop();
 }
 document.addEventListener('keydown', e => {
   if (!pageFlappy.classList.contains('active')) return;
@@ -367,11 +455,11 @@ flappyCanvas.addEventListener('mousedown', () => {
 const foodContent = document.getElementById('food-content');
 const timelineEvents = document.querySelectorAll('.timeline-event');
 const foodPages = {
-  origins: `<h2>Origins</h2><p>Food has been central to human evolution, from the discovery of fire to the development of agriculture. Early societies were shaped by what they could hunt, gather, or grow, and the sharing of food was a foundation for community and survival.</p>`,
-  tradition: `<h2>Tradition</h2><p>Across cultures, food traditions are passed down through generations. Recipes, rituals, and celebrations around food preserve identity and connect people to their heritage. From family recipes to national dishes, tradition gives food meaning beyond nutrition.</p>`,
-  globalization: `<h2>Globalization</h2><p>Modern food is shaped by global trade, migration, and technology. Fusion cuisines, international brands, and food media have made the world’s flavors more accessible, but also raise questions about authenticity and sustainability.</p>`,
-  politics: `<h2>Politics</h2><p>Food is political: access, affordability, and safety are not equal for all. Issues like food deserts, agricultural policy, and labor rights show how food reflects broader social and economic inequalities.</p>`,
-  essay: `<h2>Analytic Essay</h2><div class="essay-body"><p>Food is far more than sustenance; it is a powerful force that shapes cultures, identities, and societies. Across the world, what we eat and how we eat it is deeply intertwined with tradition, memory, and meaning. From the communal feasts of ancient civilizations to the fast-paced convenience of modern dining, food reflects our values, our histories, and our aspirations.</p><p>At its core, food is a language. Recipes are passed down through generations, carrying with them the stories and wisdom of ancestors. A single dish can evoke nostalgia, pride, or even resistance. For immigrants, food becomes a bridge between worlds, a way to preserve heritage while adapting to new environments. The act of sharing a meal fosters connection, breaking down barriers and building community.</p><p>Yet, food is also a site of conflict and inequality. Access to healthy, affordable food is not universal, and the global food system is marked by disparities in production, distribution, and consumption. The choices we make at the table are shaped by economics, politics, and power. In this way, food is both intensely personal and profoundly political.</p><p>In the age of globalization, food continues to evolve. Fusion cuisines, food media, and culinary tourism have made the world’s flavors more accessible than ever. But this interconnectedness also raises questions about authenticity, appropriation, and sustainability. As we navigate these complexities, food remains a vital expression of who we are—individually and collectively.</p><p>Ultimately, to understand food is to understand ourselves. Every bite is a story, every meal a moment of meaning. In celebrating food, we celebrate the rich tapestry of human experience.</p></div>`
+  origins: `<h2>Origins</h2><img src='https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80' alt='Ancient Cooking over Fire' style='width:100%;max-width:320px;border-radius:12px;margin-bottom:12px;'><p>Food has been central to human evolution, from the discovery of fire to the development of agriculture. Early societies were shaped by what they could hunt, gather, or grow, and the sharing of food was a foundation for community and survival. The first bread, the earliest stews, and the communal fire all mark the dawn of culinary history. <strong>Fun fact:</strong> The oldest evidence of bread-making dates back over 14,000 years!</p>`,
+  tradition: `<h2>Tradition</h2><img src='https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80' alt='Traditional Family Meal' style='width:100%;max-width:320px;border-radius:12px;margin-bottom:12px;'><p>Across cultures, food traditions are passed down through generations. Recipes, rituals, and celebrations around food preserve identity and connect people to their heritage. From family recipes to national dishes, tradition gives food meaning beyond nutrition. Think of the Sunday roast, the Lunar New Year feast, or the humble family soup—each a story on a plate. <strong>Did you know?</strong> The Japanese tea ceremony is a centuries-old tradition that celebrates harmony and respect.</p>`,
+  globalization: `<h2>Globalization</h2><img src='https://images.unsplash.com/photo-1464306076886-debca5e8a6b0?auto=format&fit=crop&w=400&q=80' alt='Global Food Market' style='width:100%;max-width:320px;border-radius:12px;margin-bottom:12px;'><p>Modern food is shaped by global trade, migration, and technology. Fusion cuisines, international brands, and food media have made the world’s flavors more accessible, but also raise questions about authenticity and sustainability. Sushi in Paris, tacos in Seoul, and pizza everywhere—food is a passport to the world. <strong>Try this:</strong> Next time you eat, think about where each ingredient came from!</p>`,
+  politics: `<h2>Politics</h2><img src='https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=400&q=80' alt='Food Politics' style='width:100%;max-width:320px;border-radius:12px;margin-bottom:12px;'><p>Food is political: access, affordability, and safety are not equal for all. Issues like food deserts, agricultural policy, and labor rights show how food reflects broader social and economic inequalities. Who grows our food, who profits, and who goes hungry are questions that shape our world. <strong>Think about:</strong> How does your food get from farm to table?</p>`,
+  essay: `<h2>Analytic Essay</h2><img src='https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80' alt='Food Essay' style='width:100%;max-width:320px;border-radius:12px;margin-bottom:12px;'><div class="essay-body"><p>Food is far more than sustenance; it is a powerful force that shapes cultures, identities, and societies. Across the world, what we eat and how we eat it is deeply intertwined with tradition, memory, and meaning. From the communal feasts of ancient civilizations to the fast-paced convenience of modern dining, food reflects our values, our histories, and our aspirations.</p><p>At its core, food is a language. Recipes are passed down through generations, carrying with them the stories and wisdom of ancestors. A single dish can evoke nostalgia, pride, or even resistance. For immigrants, food becomes a bridge between worlds, a way to preserve heritage while adapting to new environments. The act of sharing a meal fosters connection, breaking down barriers and building community.</p><p>Yet, food is also a site of conflict and inequality. Access to healthy, affordable food is not universal, and the global food system is marked by disparities in production, distribution, and consumption. The choices we make at the table are shaped by economics, politics, and power. In this way, food is both intensely personal and profoundly political.</p><p>In the age of globalization, food continues to evolve. Fusion cuisines, food media, and culinary tourism have made the world’s flavors more accessible than ever. But this interconnectedness also raises questions about authenticity, appropriation, and sustainability. As we navigate these complexities, food remains a vital expression of who we are—individually and collectively.</p><p>Ultimately, to understand food is to understand ourselves. Every bite is a story, every meal a moment of meaning. In celebrating food, we celebrate the rich tapestry of human experience.</p></div>`
 };
 function showFoodPage(key) {
   timelineEvents.forEach(ev => ev.classList.remove('active'));
